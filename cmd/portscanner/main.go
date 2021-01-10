@@ -1,29 +1,47 @@
 package main
 
 import (
-	"log"
-	"sync"
+	"fmt"
+	"net"
+	"time"
 )
 
 func main() {
-	ports := make(chan int, 100)
-	var wg sync.WaitGroup
-	for i := 0; i < cap(ports); i++ {
-		go worker(ports, &wg)
+	workers := make(chan int, 100)
+	results := make(chan int)
+	openPorts := []int{}
+
+	for i := 0; i < cap(workers); i++ {
+		go worker(workers, results)
 	}
 
-	for i := 1; i <= 1024; i++ {
-		wg.Add(1)
-		ports <- i
+	go func() {
+		for i := 1; i <= 500; i++ {
+			workers <- i
+		}
+	}()
+
+	for i := 1; i <= 500; i++ {
+		port := <-results
+		if port != 0 {
+			openPorts = append(openPorts, port)
+		}
 	}
 
-	wg.Wait()
-	close(ports)
+	close(workers)
+	close(results)
+
+	fmt.Println(openPorts)
 }
 
-func worker(ports chan int, wg *sync.WaitGroup) {
-	for p := range ports {
-		log.Printf("port:%d\n", p)
-		wg.Done()
+func worker(jobs <-chan int, results chan<- int) {
+	for j := range jobs {
+		_, err := net.DialTimeout("tcp", fmt.Sprintf("127.0.0.1:%d", j), 2*time.Second)
+		if err != nil {
+			results <- 0
+			continue
+		}
+
+		results <- j
 	}
 }
