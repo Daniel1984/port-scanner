@@ -21,7 +21,7 @@ func (ve validationerrors) Get(field string) string {
 	return errStr[0]
 }
 
-type RespErr struct {
+type errResp struct {
 	Result        string
 	Cause         string
 	InvalidFields validationerrors
@@ -55,12 +55,12 @@ func (rv ReqValidator) Valid() bool {
 }
 
 func (rv ReqValidator) GetErrResp() []byte {
-	re := RespErr{
+	er := errResp{
 		Result:        "ERROR",
 		Cause:         "INVALID_REQUEST",
 		InvalidFields: rv.Errors,
 	}
 
-	b, _ := json.Marshal(re)
+	b, _ := json.Marshal(er)
 	return b
 }

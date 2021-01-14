@@ -14,7 +14,7 @@ func main() {
 	srv := server.
 		New().
 		WithAddr(cfg.GetAPIPort()).
-		WithRouter(router.Get(cfg)).
+		WithRouter(router.Get()).
 		WithErrLogger(cfg.Errlog)
 
 	// start server in separate goroutine so that it doesn't block graceful

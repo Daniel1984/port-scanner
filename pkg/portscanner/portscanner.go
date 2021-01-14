@@ -15,7 +15,7 @@ func New(domain string, poolSize int) Scanner {
 	return Scanner{domain, poolSize}
 }
 
-func (s Scanner) ScanTil(toPort int) (openPorts []int) {
+func (s Scanner) ScanTo(toPort int) (openPorts []int) {
 	workers := make(chan int, s.poolSize)
 	results := make(chan int)
 
