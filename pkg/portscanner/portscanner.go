@@ -7,25 +7,24 @@ import (
 )
 
 type Scanner struct {
-	domain   string
-	poolSize int
+	domain string
 }
 
-func New(domain string, poolSize int) Scanner {
-	return Scanner{domain, poolSize}
+func New(domain string) Scanner {
+	return Scanner{domain}
 }
 
 func (s Scanner) ScanTo(toPort int) (openPorts []int) {
-	workers := make(chan int, s.poolSize)
+	jobs := make(chan int)
 	results := make(chan int)
 
-	for i := 0; i < cap(workers); i++ {
-		go worker(s.domain, workers, results)
+	for i := 0; i < toPort; i++ {
+		go worker(s.domain, jobs, results)
 	}
 
 	go func() {
 		for i := 1; i <= toPort; i++ {
-			workers <- i
+			jobs <- i
 		}
 	}()
 
@@ -36,7 +35,7 @@ func (s Scanner) ScanTo(toPort int) (openPorts []int) {
 		}
 	}
 
-	close(workers)
+	close(jobs)
 	close(results)
 
 	return openPorts
