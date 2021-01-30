@@ -12,15 +12,6 @@ func (ve validationerrors) Add(field, message string) {
 	ve[field] = append(ve[field], message)
 }
 
-func (ve validationerrors) Get(field string) string {
-	errStr, ok := ve[field]
-	if !ok {
-		return ""
-	}
-
-	return errStr[0]
-}
-
 type errResp struct {
 	Result        string
 	Cause         string
@@ -43,10 +34,10 @@ func (rv ReqValidator) Required(field, value string) {
 	}
 }
 
-func (rv ReqValidator) ValidStringInt(field, value string) {
+func (rv ReqValidator) ValidDecimalString(field, value string) {
 	_, err := strconv.Atoi(value)
 	if err != nil {
-		rv.Errors.Add(field, "invalid string representation of int")
+		rv.Errors.Add(field, "invalid decimal string")
 	}
 }
 
