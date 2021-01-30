@@ -1,4 +1,3 @@
-// cmd/server/handlers/scanports.go
 package handlers
 
 import (
@@ -29,29 +28,32 @@ func ScanOpenPorts(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 	v := reqvalidator.New()
 	v.Required("domain", domain)
 	v.Required("toPort", toPort)
-	v.ValidStringInt("toPort", toPort)
+	v.ValidDecimalString("toPort", toPort)
 	if !v.Valid() {
 		w.WriteHeader(http.StatusForbidden)
 		w.Write(v.GetErrResp())
 		return
 	}
 
+	// safe to skip error check here as validator above has done that already
 	port, _ := strconv.Atoi(toPort)
-	ps := portscanner.New(domain, 200)
-	op := ps.ScanTo(port)
-	resp := openPorts{
+	op := portscanner.
+		New(domain).
+		ScanTo(port)
+
+	report := openPorts{
 		FromPort:  0,
 		ToPort:    port,
 		Domain:    domain,
 		OpenPorts: op,
 	}
 
-	b, err := json.Marshal(resp)
+	resp, err := json.Marshal(report)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
-	w.Write(b)
+	w.Write(resp)
 }
